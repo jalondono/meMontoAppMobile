@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:memonto_app/src/pages/plate.page.dart';
 import 'package:memonto_app/src/routes/generator.router.dart';
-import 'package:memonto_app/src/routes/router.dart';
+
 
 
 void main() => runApp(MyApp());

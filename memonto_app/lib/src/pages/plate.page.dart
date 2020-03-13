@@ -14,6 +14,8 @@ class PlatePage extends StatefulWidget {
 }
 
 class _PlatePageState extends State<PlatePage> {
+  Map _dataUser;
+  String _userId = '';
   String _plate = '';
   Map _data ;
   String _token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlNjJhZGEzMTI5Zjc4MDAzYjVmZmFlMiIsImlhdCI6MTU4MzUyNTI4MywiZXhwIjoxNTkyMTY1MjgzfQ.AX4_2M39c2uZJYyZxgAwv6D8HDsHpZ3OJZJ3CS40j1E';
@@ -61,16 +63,31 @@ class _PlatePageState extends State<PlatePage> {
  }
 
  Future<List> _validatePlate(BuildContext context) async{
+   
+
+    http.Response getUser =  await http.get('http://3.135.230.1/api/v1/user/me', headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $_token',
+    });
+    _dataUser = json.decode(getUser.body);
+    _userId = _dataUser['data']['_id'];
+
     http.Response response =  await http.get('http://3.135.230.1/api/v1/vehicle/plate/$_plate', headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Authorization': 'Bearer $_token',
     });
     _data = json.decode(response.body);
-    print(response.body);
     setState(() {
       
     });
-    Navigator.pushNamed(context, 'NewVehicleReview', arguments: _plate);
+    if (_data == null){
+      Navigator.pushNamed(context, 'NewVehicleReview', arguments: {'plate': _plate, 'vehicleId': '', 'userId': _userId});
+    }
+    else {
+      Navigator.pushNamed(context, 'ViewReviews', arguments: {'plate': _plate, 'vehicleId': _data['_id'], 'userId': _userId});
+    }
+    
   }
 }
