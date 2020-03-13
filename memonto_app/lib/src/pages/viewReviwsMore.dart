@@ -115,11 +115,10 @@ class _ViewReviewsState extends State<ViewReviews> {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(top: 10),
+            margin: EdgeInsets.only(top: 20),
             height: 250,
-            child: _list(),
+             child: _crearLista(),
           )
-          
         ],
       )
         );
@@ -131,6 +130,20 @@ class _ViewReviewsState extends State<ViewReviews> {
   _userId =  widget.data['userId'];
   _vehicleId = widget.data['vehicleId'];
   _plate = widget.data['plate'];
+
+  http.Response getReviews =  await http.get('http://3.135.230.1/api/v1/review/all/vehicle/$_vehicleId', headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $_token',
+      });
+      if (getReviews.statusCode == 200) {
+        _dataReviews = json.decode(getReviews.body);
+        for (var review in _dataReviews) {
+          _reviews.add(review['text']);
+        }
+    }
+        setState(() {
+    });
     
   http.Response getVehicle =  await http.get('http://3.135.230.1/api/v1/vehicle/plate/$_plate', headers: {
       'Content-Type': 'application/json',
@@ -153,64 +166,26 @@ class _ViewReviewsState extends State<ViewReviews> {
     if (getMedianRating.statusCode == 200) {
         _dataRating = json.decode(getMedianRating.body);
         _ratingMedian = _dataRating['Average'].toString();
-    }
-    setState(() {
+         setState(() {
     });
+    }
   }
   
+
   Widget _crearLista() {
     return ListView.builder(
       itemCount: _reviews.length,
       itemBuilder: (BuildContext context, int index) {
-        return Text(_reviews[index]);
+        return Column(
+          children: <Widget>[
+            ListTile(
+              title: Text(_reviews[index]),
+              leading: Icon(Icons.verified_user),
+            ),
+            Divider()
+          ], 
+        );
       }
     );
   }
-
-  Future <List<dynamic>> _getReviews() async {
-    http.Response getReviews =  await http.get('http://3.135.230.1/api/v1/review/all/vehicle/${widget.data['vehicleId']}', headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $_token',
-      });
-      if (getReviews.statusCode == 200) {
-        _dataReviews = json.decode(getReviews.body);
-        for (var review in _dataReviews) {
-          _reviews.add(review['text']);
-        }
-    }
-    return _reviews;
-  }
-
-  Widget _list() {
-    return FutureBuilder(
-      initialData: [],
-      future: _getReviews(),
-      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-       switch (snapshot.connectionState) {
-          case ConnectionState.none:
-            return Text('none');
-          case ConnectionState.active:
-          case ConnectionState.waiting:
-            return Center(child: CircularProgressIndicator(),);
-          case ConnectionState.done:
-            return ListView(children: _listItems(snapshot.data),);
-
-       }
-      });
-  }
-  List<Widget> _listItems(List<dynamic> data){
-    final List<Widget> options = [];
-    data.forEach((opt) {
-      final widgetTemp = ListTile(
-        title: Text(opt),
-        leading: Icon(Icons.verified_user),
-      );
-      options..add(widgetTemp)
-      ..add(Divider());
-    });
-    return options;
-  }
 }
-
-
